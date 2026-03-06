@@ -106,6 +106,46 @@ export const DISTRITOS = {
   }
 };
 
+// Datos de zonificación del municipio de Bahía de Banderas, Nayarit
+// Fuente: Plan Municipal de Desarrollo Urbano (PMDU 2003, vigente)
+// NOTA: PDU con +20 años de rezago. PMOTDU en elaboración 2025.
+export const BAHIA_BANDERAS = {
+  nombre: "Bahía de Banderas, Nayarit",
+  periodo: "2003 (vigente — PMOTDU en proceso 2025-2030)",
+  nota: "Reglamento de Zonificación publicado 9 julio 2003. Desarrollo vertical en zonas turísticas sin control por normativa obsoleta.",
+  zonas: [
+    { clave: "H211", nombre: "Habitacional densidad 211 hab/ha", lote: 90, frente: 6, COS: 0.80, CUS: 1.60, altura: "2 niveles", densidad_viv: 50, area_libre: 0.20 },
+    { clave: "H127", nombre: "Habitacional densidad 127 hab/ha", lote: 140, frente: 8, COS: 0.70, CUS: 1.40, altura: "2 niveles", densidad_viv: 30, area_libre: 0.30 },
+    { clave: "H84", nombre: "Habitacional densidad 84 hab/ha", lote: 300, frente: 10, COS: 0.60, CUS: 1.20, altura: "2 niveles", densidad_viv: 20, area_libre: 0.40 },
+    { clave: "H51", nombre: "Habitacional densidad 51 hab/ha", lote: 400, frente: 20, COS: 0.50, CUS: 1.00, altura: "2 niveles", densidad_viv: 12, area_libre: 0.50 },
+    { clave: "CU", nombre: "Centro Urbano (mixto)", lote: 122, frente: 7, COS: 0.65, CUS: 1.95, altura: "3 niveles", densidad_viv: 50, area_libre: 0.35 },
+    { clave: "CB", nombre: "Centro de Barrio (mixto)", lote: 183, frente: 8, COS: 0.75, CUS: 1.50, altura: "2 niveles", densidad_viv: 40, area_libre: 0.25 },
+    { clave: "CRU", nombre: "Corredor Urbano (mixto)", lote: 110, frente: 7, COS: 0.80, CUS: 2.40, altura: "3 niveles", densidad_viv: 50, area_libre: 0.20 },
+    { clave: "CRU-R", nombre: "Corredor Urbano Regional", lote: 1520, frente: 40, COS: 0.65, CUS: 3.25, altura: "5 niveles", densidad_viv: 5, area_libre: 0.35 },
+    { clave: "CUC", nombre: "Corredor Urbano Costero", lote: 500, frente: 20, COS: 0.70, CUS: 4.20, altura: "6 niveles", cuartos_ha: 50, area_libre: 0.30 },
+    { clave: "DT-50", nombre: "Turístico 50 cuartos/ha", lote: 272, frente: 12, COS: 0.40, CUS: 2.40, altura: "6 niveles", cuartos_ha: 50, area_libre: 0.60 },
+    { clave: "DT-40", nombre: "Turístico 40 cuartos/ha", lote: 350, frente: 30, COS: 0.35, CUS: 1.40, altura: "4 niveles", cuartos_ha: 40, area_libre: 0.65 },
+    { clave: "DT-25", nombre: "Turístico 25 cuartos/ha", lote: 600, frente: 30, COS: 0.30, CUS: 1.20, altura: "4 niveles", cuartos_ha: 25, area_libre: 0.70 },
+    { clave: "DT-20", nombre: "Turístico 20 cuartos/ha", lote: 850, frente: 35, COS: 0.25, CUS: 0.75, altura: "3 niveles", cuartos_ha: 20, area_libre: 0.75 },
+    { clave: "DT-15", nombre: "Turístico 15 cuartos/ha", lote: 1133, frente: 40, COS: 0.20, CUS: 0.60, altura: "3 niveles", cuartos_ha: 15, area_libre: 0.80 },
+    { clave: "DT-12", nombre: "Turístico 12 cuartos/ha", lote: 1450, frente: 40, COS: 0.18, CUS: 0.36, altura: "3 niveles", cuartos_ha: 12, area_libre: 0.82 },
+    { clave: "DT-8", nombre: "Turístico 8 cuartos/ha", lote: 2175, frente: 40, COS: 0.15, CUS: 0.30, altura: "2 niveles", cuartos_ha: 8, area_libre: 0.85 },
+    { clave: "DT-5", nombre: "Turístico 5 cuartos/ha", lote: 3480, frente: 50, COS: 0.10, CUS: 0.20, altura: "2 niveles", cuartos_ha: 5, area_libre: 0.90 },
+    { clave: "DT-2", nombre: "Turístico 2 cuartos/ha", lote: 9000, frente: 50, COS: 0.08, CUS: 0.08, altura: "2 niveles", cuartos_ha: 2, area_libre: 0.92 },
+    { clave: "ER", nombre: "Equipamiento Regional", lote: 1200, frente: 40, COS: 0.60, CUS: 1.95, altura: "3 niveles", area_libre: 0.40 },
+    { clave: "CCN", nombre: "Centro Cívico y Negocios", lote: 1000, frente: 40, COS: 0.80, CUS: 1.95, altura: "3 niveles", area_libre: 0.20 },
+    { clave: "E-T", nombre: "Equipamiento Turístico", lote: 600, frente: 20, COS: 0.60, CUS: 1.80, altura: "3 niveles", area_libre: 0.40 },
+    { clave: "I-M", nombre: "Industria Mediana", lote: 3000, frente: 40, COS: 0.60, CUS: "dictamen", altura: "dictamen", area_libre: 0.40 },
+    { clave: "I-P", nombre: "Industria Pequeña", lote: 1000, frente: 30, COS: 0.65, CUS: "dictamen", altura: "dictamen", area_libre: 0.35 },
+  ],
+  excepciones: [
+    "Nuevo Vallarta y Flamingos: aplican Planes Parciales específicos",
+    "Predios colindantes con ZFMT: hasta 10 niveles de altura",
+    "Condominios turísticos: sin efecto lote mínimo, respetando densidad"
+  ],
+  localidades: ["Bucerías","Cruz de Huanacaxtle","Sayulita","San Francisco","Lo de Marcos","Higuera Blanca","Valle de Banderas","Jarretaderas","Mezcales","Mezcalitos","San José del Valle","El Porvenir","San Vicente","San Juan de Abajo","Nuevo Corral del Risco","Fracc. Emiliano Zapata"]
+};
+
 export const GLOSARIO = {
   COS: "Coeficiente de Ocupación del Suelo — % del terreno que puedes construir en planta baja",
   CUS: "Coeficiente de Utilización del Suelo — total m² construibles ÷ m² de terreno",

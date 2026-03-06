@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { DISTRITOS, GLOSARIO } from '../data/zonificacion'
+import { DISTRITOS, BAHIA_BANDERAS, GLOSARIO } from '../data/zonificacion'
 
-const DISTRITO_OPTIONS = [
+const PVR_OPTIONS = [
   { id: 'D1', label: 'Zona Romántica / Olas Altas' },
   { id: 'D2', label: '5 de Diciembre / E. Zapata' },
   { id: 'D3', label: 'Versalles / Fluvial' },
@@ -12,7 +12,7 @@ const DISTRITO_OPTIONS = [
 ]
 
 function generarDictamen(zona, distrito, terrenoM2, frente, uso) {
-  const d = DISTRITOS[distrito]
+  const d = distrito === 'BB' ? BAHIA_BANDERAS : DISTRITOS[distrito]
   const z = zona
   const loteMin = typeof z.lote === 'number' ? z.lote : parseFloat(String(z.lote).replace(/,/g, ''))
   const frenteMin = typeof z.frente === 'number' ? z.frente : parseFloat(String(z.frente).replace(/,/g, ''))
@@ -119,7 +119,8 @@ function DictamenResult({ result, terrenoM2, frente }) {
 }
 
 export default function Home() {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)
+  const [municipio, setMunicipio] = useState(null) // 'pvr' or 'bb'
   const [selectedDistrito, setSelectedDistrito] = useState(null)
   const [selectedZona, setSelectedZona] = useState(null)
   const [frenteInput, setFrenteInput] = useState('')
@@ -127,22 +128,25 @@ export default function Home() {
   const [uso, setUso] = useState('habitacional')
   const [search, setSearch] = useState('')
 
-  const distrito = selectedDistrito ? DISTRITOS[selectedDistrito] : null
+  const isBB = municipio === 'bb'
+  const distrito = selectedDistrito ? DISTRITOS[selectedDistrito] : (isBB ? BAHIA_BANDERAS : null)
   const terrenoM2 = parseFloat(frenteInput) * parseFloat(fondoInput) || 0
   const frenteNum = parseFloat(frenteInput) || 0
 
-  const filteredZonas = distrito?.zonas?.filter(z => {
+  const zonaSource = isBB ? BAHIA_BANDERAS.zonas : (distrito?.zonas || [])
+  const filteredZonas = zonaSource.filter(z => {
     if (!search) return true
     const s = search.toLowerCase()
     return z.clave.toLowerCase().includes(s) || z.nombre.toLowerCase().includes(s)
-  }) || []
+  })
 
   const dictamen = selectedZona && terrenoM2 > 0 && frenteNum > 0
-    ? generarDictamen(selectedZona, selectedDistrito, terrenoM2, frenteNum, uso)
+    ? generarDictamen(selectedZona, selectedDistrito || 'BB', terrenoM2, frenteNum, uso)
     : null
 
-  const reset = () => { setStep(1); setSelectedDistrito(null); setSelectedZona(null); setFrenteInput(''); setFondoInput(''); setSearch('') }
-  const totalZonas = Object.values(DISTRITOS).reduce((sum, d) => sum + d.zonas.length, 0)
+  const reset = () => { setStep(0); setMunicipio(null); setSelectedDistrito(null); setSelectedZona(null); setFrenteInput(''); setFondoInput(''); setSearch('') }
+  const totalZonasPVR = Object.values(DISTRITOS).reduce((sum, d) => sum + d.zonas.length, 0)
+  const totalZonas = totalZonasPVR + BAHIA_BANDERAS.zonas.length
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
@@ -152,7 +156,7 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: '#c9a84c22', color: 'var(--accent)' }}>◉</div>
             <div>
               <h1 className="text-lg font-bold">Dictamen de Uso de Suelo</h1>
-              <p className="text-xs" style={{ color: 'var(--text2)' }}>Puerto Vallarta — {totalZonas} zonas · 6 distritos</p>
+              <p className="text-xs" style={{ color: 'var(--text2)' }}>PV + Bahía de Banderas — {totalZonas} zonas · 2 municipios</p>
             </div>
           </div>
         </div>
@@ -161,18 +165,43 @@ export default function Home() {
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Progress */}
         <div className="flex items-center gap-2 text-xs">
-          {[1,2,3,4].map(s => (
+          {(isBB ? [0,1,3,4] : [0,1,2,3,4]).map((s, idx) => (
             <div key={s} className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center mono text-xs font-bold"
-                style={{ background: step >= s ? 'var(--accent)' : 'var(--surface2)', color: step >= s ? '#0a0a0c' : 'var(--text2)' }}>{s}</div>
-              {s < 4 && <div className="w-6 h-px" style={{ background: step > s ? 'var(--accent)' : 'var(--border)' }} />}
+                style={{ background: step >= s ? 'var(--accent)' : 'var(--surface2)', color: step >= s ? '#0a0a0c' : 'var(--text2)' }}>{idx+1}</div>
+              {idx < (isBB ? 3 : 4) && <div className="w-6 h-px" style={{ background: step > s ? 'var(--accent)' : 'var(--border)' }} />}
             </div>
           ))}
           <span className="ml-2" style={{ color: 'var(--text2)' }}>
-            {step === 1 && 'Terreno'}{step === 2 && 'Distrito'}{step === 3 && 'Zona'}{step === 4 && 'Dictamen'}
+            {step === 0 && 'Municipio'}{step === 1 && 'Terreno'}{step === 2 && 'Distrito'}{step === 3 && 'Zona'}{step === 4 && 'Dictamen'}
           </span>
-          {step > 1 && <button onClick={reset} className="ml-auto text-xs underline" style={{ color: 'var(--accent)' }}>Reiniciar</button>}
+          {step > 0 && <button onClick={reset} className="ml-auto text-xs underline" style={{ color: 'var(--accent)' }}>Reiniciar</button>}
         </div>
+
+        {/* Step 0: Municipio */}
+        {step === 0 && (
+          <div className="space-y-3">
+            <div className="text-sm font-bold">¿Dónde está tu terreno?</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button onClick={() => { setMunicipio('pvr'); setStep(1) }}
+                className="p-5 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
+                style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                <div className="text-2xl mb-2">🏖️</div>
+                <div className="font-bold">Puerto Vallarta</div>
+                <div className="text-xs mt-1" style={{ color: 'var(--text2)' }}>Jalisco · {totalZonasPVR} zonas · 6 distritos</div>
+                <div className="text-xs mt-1" style={{ color: 'var(--accent)' }}>PDU 2012-2021</div>
+              </button>
+              <button onClick={() => { setMunicipio('bb'); setStep(1) }}
+                className="p-5 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
+                style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                <div className="text-2xl mb-2">🌴</div>
+                <div className="font-bold">Bahía de Banderas</div>
+                <div className="text-xs mt-1" style={{ color: 'var(--text2)' }}>Nayarit · {BAHIA_BANDERAS.zonas.length} zonas</div>
+                <div className="text-xs mt-1" style={{ color: '#f59e0b' }}>PDU 2003 (en actualización)</div>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Step 1 */}
         {step === 1 && (
@@ -213,7 +242,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <button onClick={() => terrenoM2 > 0 && frenteNum > 0 && setStep(2)}
+            <button onClick={() => terrenoM2 > 0 && frenteNum > 0 && setStep(isBB ? 3 : 2)}
               disabled={terrenoM2 <= 0 || frenteNum <= 0}
               className="w-full py-3 rounded-lg font-bold text-sm transition-all"
               style={{ background: terrenoM2 > 0 ? 'var(--accent)' : 'var(--surface2)', color: terrenoM2 > 0 ? '#0a0a0c' : 'var(--text2)', cursor: terrenoM2 > 0 ? 'pointer' : 'not-allowed' }}>
@@ -227,7 +256,7 @@ export default function Home() {
           <div className="space-y-3">
             <div className="text-sm font-bold">¿En qué zona de PV está tu terreno?</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {DISTRITO_OPTIONS.map(d => (
+              {PVR_OPTIONS.map(d => (
                 <button key={d.id} onClick={() => { setSelectedDistrito(d.id); setStep(3) }}
                   className="p-4 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
                   style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
@@ -241,12 +270,12 @@ export default function Home() {
         )}
 
         {/* Step 3 */}
-        {step === 3 && distrito && (
+        {step === 3 && (distrito || isBB) && (
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
                 <div className="text-sm font-bold">Selecciona tu zonificación</div>
-                <div className="text-xs" style={{ color: 'var(--text2)' }}>{distrito.nombre} · {terrenoM2} m² ({frenteInput}×{fondoInput})</div>
+                <div className="text-xs" style={{ color: 'var(--text2)' }}>{isBB ? BAHIA_BANDERAS.nombre : distrito.nombre} · {terrenoM2} m² ({frenteInput}×{fondoInput})</div>
               </div>
               <input type="text" placeholder="Filtrar..." value={search} onChange={e => setSearch(e.target.value)}
                 className="px-3 py-2 rounded-lg border text-sm bg-transparent outline-none w-full sm:w-44"
@@ -255,6 +284,11 @@ export default function Home() {
             <div className="text-xs p-3 rounded-lg" style={{ background: 'var(--surface2)', color: 'var(--text2)' }}>
               💡 La clave de zonificación (H1, H2, CS2, TS...) aparece en tu escritura, constancia catastral o plano de lotificación.
             </div>
+            {isBB && (
+              <div className="text-xs p-3 rounded-lg" style={{ background: '#f59e0b10', color: '#f59e0b' }}>
+                ⚠️ PDU Bahía de Banderas data de 2003 (+20 años). Nuevo Vallarta y Flamingos tienen planes parciales propios. Predios colindantes con ZFMT permiten hasta 10 niveles.
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {filteredZonas.map((z, i) => (
                 <button key={i} onClick={() => { setSelectedZona(z); setStep(4) }}
@@ -279,7 +313,7 @@ export default function Home() {
         {/* Step 4 */}
         {step === 4 && dictamen && (
           <div className="space-y-4">
-            <div className="text-sm font-bold">Dictamen — {terrenoM2} m² ({frenteInput}m × {fondoInput}m) — {uso}</div>
+            <div className="text-sm font-bold">Dictamen — {terrenoM2} m² ({frenteInput}m × {fondoInput}m) — {uso} — {isBB ? 'Bahía de Banderas' : 'Puerto Vallarta'}</div>
             <DictamenResult result={dictamen} terrenoM2={terrenoM2} frente={frenteNum} />
           </div>
         )}
