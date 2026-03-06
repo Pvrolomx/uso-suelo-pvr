@@ -1,0 +1,68 @@
+{
+  "fuente": "Plan Municipal de Desarrollo Urbano de Bahía de Banderas, Nayarit",
+  "periodo": "2003 (vigente - en proceso de actualización PMOTDU 2025-2030)",
+  "nota_legal": "PDU con rezago de +20 años. Reglamento de Zonificación publicado 9 julio 2003. PMOTDU en elaboración 2025.",
+  "zonas": {
+    "HABITACIONAL": [
+      {"clave":"H211","nombre":"Habitacional densidad 211 hab/ha","densidad_viv_ha":50,"lote_min":90,"frente_min":6,"niveles":2,"area_libre":0.20,"COS":0.80,"CUS":1.60},
+      {"clave":"H127","nombre":"Habitacional densidad 127 hab/ha","densidad_viv_ha":30,"lote_min":140,"frente_min":8,"niveles":2,"area_libre":0.30,"COS":0.70,"CUS":1.40},
+      {"clave":"H84","nombre":"Habitacional densidad 84 hab/ha","densidad_viv_ha":20,"lote_min":300,"frente_min":10,"niveles":2,"area_libre":0.40,"COS":0.60,"CUS":1.20},
+      {"clave":"H51","nombre":"Habitacional densidad 51 hab/ha","densidad_viv_ha":12,"lote_min":400,"frente_min":20,"niveles":2,"area_libre":0.50,"COS":0.50,"CUS":1.00}
+    ],
+    "MIXTO": [
+      {"clave":"CU","nombre":"Centro Urbano","densidad_viv_ha":50,"lote_min":122,"frente_min":7,"niveles":3,"area_libre":0.35,"COS":0.65,"CUS":1.95},
+      {"clave":"CB","nombre":"Centro de Barrio","densidad_viv_ha":40,"lote_min":183,"frente_min":8,"niveles":2,"area_libre":0.25,"COS":0.75,"CUS":1.50},
+      {"clave":"CRU","nombre":"Corredor Urbano","densidad_viv_ha":50,"lote_min":110,"frente_min":7,"niveles":3,"area_libre":0.20,"COS":0.80,"CUS":2.40},
+      {"clave":"CRU-R","nombre":"Corredor Urbano Regional","densidad_viv_ha":5,"lote_min":1520,"frente_min":40,"niveles":5,"area_libre":0.35,"COS":0.65,"CUS":3.25},
+      {"clave":"CUC","nombre":"Corredor Urbano Costero","densidad_viv_ha":25,"cuartos_ha":50,"lote_min":null,"frente_min":null,"niveles":6,"area_libre":0.30,"COS":0.70,"CUS":4.20}
+    ],
+    "EQUIPAMIENTO": [
+      {"clave":"ER","nombre":"Equipamiento Regional","lote_min":1200,"frente_min":40,"niveles":3,"area_libre":0.40,"COS":0.60,"CUS":1.95},
+      {"clave":"CCN","nombre":"Centro Cívico y Negocios","lote_min":1000,"frente_min":40,"niveles":3,"area_libre":0.20,"COS":0.80,"CUS":1.95},
+      {"clave":"E-T","nombre":"Equipamiento Turístico","lote_min":600,"frente_min":20,"niveles":3,"area_libre":0.40,"COS":0.60,"CUS":1.80},
+      {"clave":"E-EC","nombre":"Equipamiento Educación y Cultura","lote_min":null,"frente_min":null,"niveles":null,"area_libre":null,"COS":null,"CUS":null},
+      {"clave":"E-SA","nombre":"Equipamiento Salud y Asistencia","lote_min":null,"frente_min":null,"niveles":null,"area_libre":null,"COS":null,"CUS":null},
+      {"clave":"E-C","nombre":"Equipamiento Comercio","lote_min":null,"frente_min":null,"niveles":null,"area_libre":null,"COS":null,"CUS":null},
+      {"clave":"E-RD","nombre":"Equipamiento Recreación y Deporte","lote_min":null,"frente_min":null,"niveles":null,"area_libre":null,"COS":null,"CUS":null},
+      {"clave":"E-CT","nombre":"Equipamiento Comunicaciones y Transportes","lote_min":null,"frente_min":null,"niveles":null,"area_libre":null,"COS":null,"CUS":null},
+      {"clave":"E-A","nombre":"Equipamiento Abasto","lote_min":null,"frente_min":null,"niveles":null,"area_libre":null,"COS":null,"CUS":null},
+      {"clave":"E-AS","nombre":"Equipamiento Administración y Servicios","lote_min":null,"frente_min":null,"niveles":null,"area_libre":null,"COS":null,"CUS":null}
+    ],
+    "INDUSTRIAL": [
+      {"clave":"I-M","nombre":"Industria Mediana","lote_min":3000,"frente_min":40,"niveles":"dictamen","area_libre":0.40,"COS":0.60,"CUS":"dictamen"},
+      {"clave":"I-P","nombre":"Industria Pequeña","lote_min":1000,"frente_min":30,"niveles":"dictamen","area_libre":0.35,"COS":0.65,"CUS":"dictamen"}
+    ],
+    "TURISTICO": [
+      {"clave":"DT-50","nombre":"Desarrollo Turístico 50 cuartos/ha","cuartos_ha":50,"lote_min":272,"frente_min":12,"niveles":6,"area_libre":0.60,"COS":0.40,"CUS":2.40},
+      {"clave":"DT-40","nombre":"Desarrollo Turístico 40 cuartos/ha","cuartos_ha":40,"lote_min":350,"frente_min":30,"niveles":4,"area_libre":0.65,"COS":0.35,"CUS":1.40},
+      {"clave":"DT-25","nombre":"Desarrollo Turístico 25 cuartos/ha","cuartos_ha":25,"lote_min":600,"frente_min":30,"niveles":4,"area_libre":0.70,"COS":0.30,"CUS":1.20},
+      {"clave":"DT-20","nombre":"Desarrollo Turístico 20 cuartos/ha","cuartos_ha":20,"lote_min":850,"frente_min":35,"niveles":3,"area_libre":0.75,"COS":0.25,"CUS":0.75},
+      {"clave":"DT-15","nombre":"Desarrollo Turístico 15 cuartos/ha","cuartos_ha":15,"lote_min":1133,"frente_min":40,"niveles":3,"area_libre":0.80,"COS":0.20,"CUS":0.60},
+      {"clave":"DT-12","nombre":"Desarrollo Turístico 12 cuartos/ha","cuartos_ha":12,"lote_min":1450,"frente_min":40,"niveles":3,"area_libre":0.82,"COS":0.18,"CUS":0.36},
+      {"clave":"DT-8","nombre":"Desarrollo Turístico 8 cuartos/ha","cuartos_ha":8,"lote_min":2175,"frente_min":40,"niveles":2,"area_libre":0.85,"COS":0.15,"CUS":0.30},
+      {"clave":"DT-5","nombre":"Desarrollo Turístico 5 cuartos/ha","cuartos_ha":5,"lote_min":3480,"frente_min":50,"niveles":2,"area_libre":0.90,"COS":0.10,"CUS":0.20},
+      {"clave":"DT-2","nombre":"Desarrollo Turístico 2 cuartos/ha","cuartos_ha":2,"lote_min":9000,"frente_min":50,"niveles":2,"area_libre":0.92,"COS":0.08,"CUS":0.08}
+    ],
+    "NATURAL_AGRICOLA": [
+      {"clave":"N-BOS-P","nombre":"Bosque Protegido","uso":"recreación pasiva, ecoturismo","vivienda":false},
+      {"clave":"N-BOS-A","nombre":"Bosque Amortiguamiento","densidad_viv_ha":0.5,"lote_min":12000,"frente_min":50,"niveles":1,"area_libre":0.97,"COS":0.03,"CUS":0.03},
+      {"clave":"ZR","nombre":"Zona de Riesgo","uso":"ninguna actividad urbana","vivienda":false},
+      {"clave":"CA","nombre":"Cuerpo de Agua","uso":"recreación pasiva","vivienda":false},
+      {"clave":"AG-AP-P","nombre":"Agrícola Alta Productividad Protegida","vivienda":false},
+      {"clave":"AG-MP-N","nombre":"Agrícola Mediana Productividad","densidad_viv_ha":0.5,"lote_min":12000,"frente_min":50,"niveles":1,"area_libre":0.925,"COS":0.075,"CUS":0.075},
+      {"clave":"AG-BP-N","nombre":"Agrícola Baja Productividad","densidad_viv_ha":1,"lote_min":6000,"frente_min":50,"niveles":1,"area_libre":0.925,"COS":0.075,"CUS":0.075}
+    ]
+  },
+  "excepciones": {
+    "nuevo_vallarta_flamingos": "Aplican normatividades de Planes Parciales específicos",
+    "colindancia_ZFMT": "Predios con colindancia a Zona Federal Marítimo Terrestre: hasta 10 niveles de altura",
+    "condominios_turisticos": "Pueden agrupar viviendas mediante mecanismo de compensación, sin efecto lote mínimo, respetando densidad y áreas libres"
+  },
+  "localidades_principales": [
+    "Bucerías","Cruz de Huanacaxtle","Sayulita","San Francisco","Lo de Marcos",
+    "Higuera Blanca","Valle de Banderas","Jarretaderas","Mezcales","Mezcalitos",
+    "San José del Valle","El Porvenir","San Vicente","San Juan de Abajo","El Colomo",
+    "Nuevo Corral del Risco","Fracc. Emiliano Zapata","Santa Rosa Tapachula",
+    "Pontoroque","Fortuna de Vallejo","Aguamilpa","El Coatante","Los Sauces"
+  ]
+}
