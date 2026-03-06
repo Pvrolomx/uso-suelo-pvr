@@ -3,63 +3,292 @@ import { useState } from 'react'
 import { DISTRITOS, GLOSARIO } from '../data/zonificacion'
 
 const DISTRITO_OPTIONS = [
-  { id: 'D1', label: 'D1 — Zona Romántica / Olas Altas' },
-  { id: 'D2', label: 'D2 — 5 de Diciembre / E. Zapata' },
-  { id: 'D3', label: 'D3 — Versalles / Fluvial' },
-  { id: 'D4', label: 'D4 — Ixtapa / Las Juntas / Pitillal' },
-  { id: 'D5', label: 'D5 — Marina Vallarta / Zona Hotelera' },
-  { id: 'D9', label: 'D9 — Conchas Chinas / Amapas' },
+  { id: 'D1', label: 'Zona Romántica / Olas Altas' },
+  { id: 'D2', label: '5 de Diciembre / E. Zapata' },
+  { id: 'D3', label: 'Versalles / Fluvial' },
+  { id: 'D4', label: 'Ixtapa / Las Juntas / Pitillal' },
+  { id: 'D5', label: 'Marina Vallarta / Zona Hotelera' },
+  { id: 'D9', label: 'Conchas Chinas / Amapas' },
 ]
 
-function ZonaCard({ zona }) {
-  const [open, setOpen] = useState(false)
-  const cusEfectivo = zona.ICUS ? `→ ${(parseFloat(zona.CUS) + parseFloat(zona.ICUS)).toFixed(2)} con ICUS` : null
+function generarDictamen(zona, distrito, terrenoM2, frente, uso) {
+  const d = DISTRITOS[distrito]
+  const z = zona
+  const loteMin = typeof z.lote === 'number' ? z.lote : parseFloat(String(z.lote).replace(/,/g, ''))
+  const frenteMin = typeof z.frente === 'number' ? z.frente : parseFloat(String(z.frente).replace(/,/g, ''))
+  const cos = typeof z.COS === 'number' ? z.COS : parseFloat(z.COS)
+  const cus = typeof z.CUS === 'number' ? z.CUS : parseFloat(z.CUS)
+  const icus = z.ICUS ? (typeof z.ICUS === 'number' ? z.ICUS : parseFloat(z.ICUS)) : 0
 
+  const cumpleLote = terrenoM2 >= loteMin
+  const cumpleFrente = frente >= frenteMin
+  const plantaBaja = Math.floor(terrenoM2 * cos)
+  const totalConstruible = Math.floor(terrenoM2 * cus)
+  const totalConICUS = icus ? Math.floor(terrenoM2 * (cus + icus)) : null
+  const nivelesAprox = cos > 0 ? Math.ceil(cus / cos) : '?'
+
+  let maxViviendas = null
+  if (z.IV && z.IV !== '—' && typeof z.IV === 'number') {
+    maxViviendas = Math.floor(terrenoM2 / z.IV)
+  }
+
+  const esHabitacional = z.nombre.toLowerCase().includes('habit')
+  const esComercial = z.nombre.toLowerCase().includes('comerc') || z.nombre.toLowerCase().includes('mixto')
+  const esTuristico = z.nombre.toLowerCase().includes('turíst') || z.nombre.toLowerCase().includes('turist')
+  const esIndustrial = z.nombre.toLowerCase().includes('indust')
+
+  let usoPermitido = true
+  let usoNota = ''
+  if (uso === 'habitacional') {
+    if (esTuristico && !z.nombre.toLowerCase().includes('hab')) {
+      usoPermitido = false; usoNota = 'Zona turística — solo alojamiento temporal, NO vivienda permanente'
+    } else if (esIndustrial) {
+      usoPermitido = false; usoNota = 'Zona industrial — uso habitacional PROHIBIDO'
+    } else { usoNota = esHabitacional ? 'Uso habitacional PERMITIDO (predominante)' : 'Uso habitacional COMPATIBLE' }
+  } else if (uso === 'comercial') {
+    if (esComercial) { usoPermitido = true; usoNota = 'Uso comercial PERMITIDO' }
+    else { usoNota = 'Revisar tabla de compatibilidad del PDU para uso específico' }
+  } else if (uso === 'turistico') {
+    if (esTuristico) { usoPermitido = true; usoNota = 'Uso turístico PERMITIDO (predominante)' }
+    else if (z.nombre.toLowerCase().includes('medio') || z.nombre.toLowerCase().includes('alto')) {
+      usoNota = 'Alojamiento temporal puede ser CONDICIONADO — verificar PDU'
+    } else { usoPermitido = false; usoNota = 'Zona habitacional básica — ETJ generalmente PROHIBIDO' }
+  }
+
+  const restricciones = []
+  if (z.altura === 'R*') restricciones.push('Altura CONDICIONADA (R*) — posible restricción aeroportuaria OACI')
+  if (z.ICUS) restricciones.push('Requiere EPP (Espacio Público Programado) como contraprestación por ICUS')
+
+  return { cumpleLote, cumpleFrente, plantaBaja, totalConstruible, totalConICUS, nivelesAprox, maxViviendas, usoPermitido, usoNota, restricciones, loteMin, frenteMin, cos, cus, icus, zona: z, distrito: d }
+}
+
+function StatBig({ label, value, sub, highlight }) {
   return (
-    <div
-      className="rounded-lg border transition-all cursor-pointer hover:border-[var(--accent)]"
-      style={{ background: 'var(--surface)', borderColor: open ? 'var(--accent)' : 'var(--border)' }}
-      onClick={() => setOpen(!open)}
-    >
-      <div className="p-4 flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="mono text-sm font-bold" style={{ color: 'var(--accent)' }}>{zona.clave}</span>
-            {zona.ICUS && <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#c9a84c22', color: 'var(--accent)' }}>+ICUS {zona.ICUS}</span>}
-          </div>
-          <div className="text-sm mt-1" style={{ color: 'var(--text2)' }}>{zona.nombre}</div>
-        </div>
-        <div className="text-right shrink-0">
-          <div className="mono text-lg font-bold">{zona.CUS}</div>
-          <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text2)' }}>CUS</div>
-        </div>
-      </div>
-
-      {open && (
-        <div className="px-4 pb-4 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-            <Stat label="Lote mín." value={typeof zona.lote === 'number' ? `${zona.lote.toLocaleString()} m²` : `${zona.lote} m²`} />
-            <Stat label="Frente mín." value={`${zona.frente} ml`} />
-            <Stat label="COS" value={zona.COS} />
-            <Stat label="Altura" value={zona.altura} />
-            <Stat label="IV" value={zona.IV} />
-            <Stat label="IHO" value={zona.IHO} />
-            {zona.ICUS && <Stat label="ICUS" value={zona.ICUS} highlight />}
-            {cusEfectivo && <Stat label="CUS efectivo" value={cusEfectivo.replace('→ ', '')} highlight />}
-          </div>
-        </div>
-      )}
+    <div>
+      <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'var(--text2)' }}>{label}</div>
+      <div className="mono text-xl font-bold" style={{ color: highlight ? 'var(--accent)' : 'var(--text)' }}>{value}</div>
+      {sub && <div className="text-[10px] mt-0.5" style={{ color: 'var(--text2)' }}>{sub}</div>}
     </div>
   )
 }
 
-function Stat({ label, value, highlight }) {
+function DictamenResult({ result, terrenoM2, frente }) {
+  const r = result
+  const viable = r.cumpleLote && r.cumpleFrente && r.usoPermitido
   return (
-    <div>
-      <div className="text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'var(--text2)' }}>{label}</div>
-      <div className="mono text-sm font-bold" style={{ color: highlight ? 'var(--accent)' : 'var(--text)' }}>
-        {value === "—" ? <span style={{ color: 'var(--text2)' }}>—</span> : value}
+    <div className="space-y-4">
+      <div className="p-4 rounded-lg border" style={{ background: viable ? '#16a34a15' : '#dc262615', borderColor: viable ? '#4ade8055' : '#f8717155' }}>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-2xl">{viable ? '✅' : '⛔'}</span>
+          <span className="text-lg font-bold" style={{ color: viable ? 'var(--green)' : 'var(--red)' }}>{viable ? 'FACTIBLE' : 'NO VIABLE'}</span>
+        </div>
+        <div className="text-sm space-y-1" style={{ color: 'var(--text2)' }}>
+          {!r.cumpleLote && <div style={{ color: 'var(--red)' }}>✗ Lote mínimo: {r.loteMin.toLocaleString()} m² — tu terreno: {terrenoM2} m²</div>}
+          {!r.cumpleFrente && <div style={{ color: 'var(--red)' }}>✗ Frente mínimo: {r.frenteMin} ml — tu frente: {frente} ml</div>}
+          {r.cumpleLote && <div style={{ color: 'var(--green)' }}>✓ Lote OK ({r.loteMin.toLocaleString()} m² mín.)</div>}
+          {r.cumpleFrente && <div style={{ color: 'var(--green)' }}>✓ Frente OK ({r.frenteMin} ml mín.)</div>}
+          <div style={{ color: r.usoPermitido ? 'var(--green)' : 'var(--red)' }}>{r.usoPermitido ? '✓' : '✗'} {r.usoNota}</div>
+        </div>
       </div>
+
+      <div className="p-4 rounded-lg border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+        <div className="text-xs uppercase tracking-wider mb-3 font-bold" style={{ color: 'var(--accent)' }}>Cálculo Urbanístico</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <StatBig label="Planta baja máx." value={`${r.plantaBaja.toLocaleString()} m²`} sub={`COS ${r.cos} × ${terrenoM2} m²`} />
+          <StatBig label="Total construible" value={`${r.totalConstruible.toLocaleString()} m²`} sub={`CUS ${r.cus} × ${terrenoM2} m²`} />
+          {r.totalConICUS && <StatBig label="Con ICUS" value={`${r.totalConICUS.toLocaleString()} m²`} sub={`CUS ${(r.cus + r.icus).toFixed(2)} efectivo`} highlight />}
+          <StatBig label="Niveles aprox." value={r.zona.altura === 'R' || r.zona.altura === 'R*' ? `~${r.nivelesAprox}` : r.zona.altura} sub={r.zona.altura === 'R' ? 'Resultante COS/CUS' : r.zona.altura === 'R*' ? 'Condicionada' : 'Fija por PDU'} />
+          {r.maxViviendas !== null && <StatBig label="Máx. viviendas" value={r.maxViviendas} sub={`IV=${r.zona.IV} → ${terrenoM2}÷${r.zona.IV}`} />}
+          {r.zona.IHO && r.zona.IHO !== '—' && <StatBig label="IHO cuartos/ha" value={r.zona.IHO} sub="Índice hotelero" />}
+        </div>
+      </div>
+
+      {r.restricciones.length > 0 && (
+        <div className="p-4 rounded-lg border" style={{ background: '#f59e0b10', borderColor: '#f59e0b33' }}>
+          <div className="text-xs uppercase tracking-wider mb-2 font-bold" style={{ color: '#f59e0b' }}>Alertas</div>
+          {r.restricciones.map((res, i) => <div key={i} className="text-sm mb-1">⚠️ {res}</div>)}
+        </div>
+      )}
+
+      <div className="p-3 rounded-lg border text-xs" style={{ background: 'var(--surface2)', borderColor: 'var(--border)', color: 'var(--text2)' }}>
+        <span className="mono font-bold" style={{ color: 'var(--accent)' }}>{r.zona.clave}</span> — {r.zona.nombre} · {r.distrito.nombre} · PDU {r.distrito.periodo}
+        <div className="mt-2" style={{ fontSize: 10 }}>⚖️ Dictamen INFORMATIVO. No sustituye constancia oficial del municipio. Datos de los PDU publicados por el H. Ayuntamiento de Puerto Vallarta.</div>
+      </div>
+    </div>
+  )
+}
+
+export default function Home() {
+  const [step, setStep] = useState(1)
+  const [selectedDistrito, setSelectedDistrito] = useState(null)
+  const [selectedZona, setSelectedZona] = useState(null)
+  const [frenteInput, setFrenteInput] = useState('')
+  const [fondoInput, setFondoInput] = useState('')
+  const [uso, setUso] = useState('habitacional')
+  const [search, setSearch] = useState('')
+
+  const distrito = selectedDistrito ? DISTRITOS[selectedDistrito] : null
+  const terrenoM2 = parseFloat(frenteInput) * parseFloat(fondoInput) || 0
+  const frenteNum = parseFloat(frenteInput) || 0
+
+  const filteredZonas = distrito?.zonas?.filter(z => {
+    if (!search) return true
+    const s = search.toLowerCase()
+    return z.clave.toLowerCase().includes(s) || z.nombre.toLowerCase().includes(s)
+  }) || []
+
+  const dictamen = selectedZona && terrenoM2 > 0 && frenteNum > 0
+    ? generarDictamen(selectedZona, selectedDistrito, terrenoM2, frenteNum, uso)
+    : null
+
+  const reset = () => { setStep(1); setSelectedDistrito(null); setSelectedZona(null); setFrenteInput(''); setFondoInput(''); setSearch('') }
+  const totalZonas = Object.values(DISTRITOS).reduce((sum, d) => sum + d.zonas.length, 0)
+
+  return (
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+      <header className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: '#c9a84c22', color: 'var(--accent)' }}>◉</div>
+            <div>
+              <h1 className="text-lg font-bold">Dictamen de Uso de Suelo</h1>
+              <p className="text-xs" style={{ color: 'var(--text2)' }}>Puerto Vallarta — {totalZonas} zonas · 6 distritos</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+        {/* Progress */}
+        <div className="flex items-center gap-2 text-xs">
+          {[1,2,3,4].map(s => (
+            <div key={s} className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center mono text-xs font-bold"
+                style={{ background: step >= s ? 'var(--accent)' : 'var(--surface2)', color: step >= s ? '#0a0a0c' : 'var(--text2)' }}>{s}</div>
+              {s < 4 && <div className="w-6 h-px" style={{ background: step > s ? 'var(--accent)' : 'var(--border)' }} />}
+            </div>
+          ))}
+          <span className="ml-2" style={{ color: 'var(--text2)' }}>
+            {step === 1 && 'Terreno'}{step === 2 && 'Distrito'}{step === 3 && 'Zona'}{step === 4 && 'Dictamen'}
+          </span>
+          {step > 1 && <button onClick={reset} className="ml-auto text-xs underline" style={{ color: 'var(--accent)' }}>Reiniciar</button>}
+        </div>
+
+        {/* Step 1 */}
+        {step === 1 && (
+          <div className="space-y-4">
+            <div className="p-5 rounded-lg border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              <div className="text-sm font-bold mb-4">¿Cuánto mide tu terreno?</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs mb-1 block" style={{ color: 'var(--text2)' }}>Frente (metros)</label>
+                  <input type="number" placeholder="ej: 10" value={frenteInput} onChange={e => setFrenteInput(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-lg border text-sm bg-transparent outline-none mono"
+                    style={{ borderColor: 'var(--border)', color: 'var(--text)' }} />
+                </div>
+                <div>
+                  <label className="text-xs mb-1 block" style={{ color: 'var(--text2)' }}>Fondo (metros)</label>
+                  <input type="number" placeholder="ej: 20" value={fondoInput} onChange={e => setFondoInput(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-lg border text-sm bg-transparent outline-none mono"
+                    style={{ borderColor: 'var(--border)', color: 'var(--text)' }} />
+                </div>
+              </div>
+              {terrenoM2 > 0 && (
+                <div className="mt-3 p-3 rounded-lg" style={{ background: 'var(--surface2)' }}>
+                  <span className="text-xs" style={{ color: 'var(--text2)' }}>Superficie: </span>
+                  <span className="mono font-bold" style={{ color: 'var(--accent)' }}>{terrenoM2.toLocaleString()} m²</span>
+                </div>
+              )}
+              <div className="mt-4">
+                <label className="text-xs mb-2 block" style={{ color: 'var(--text2)' }}>¿Qué quieres construir?</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[{ id: 'habitacional', emoji: '🏠', label: 'Vivienda' },{ id: 'comercial', emoji: '🏪', label: 'Comercial' },{ id: 'turistico', emoji: '🏨', label: 'Turístico' }].map(u => (
+                    <button key={u.id} onClick={() => setUso(u.id)}
+                      className="p-2.5 rounded-lg border text-center text-sm transition-all"
+                      style={{ background: uso === u.id ? 'var(--surface2)' : 'var(--surface)', borderColor: uso === u.id ? 'var(--accent)' : 'var(--border)' }}>
+                      <div className="text-lg">{u.emoji}</div>
+                      <div className="text-xs mt-0.5" style={{ color: uso === u.id ? 'var(--accent)' : 'var(--text2)' }}>{u.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <button onClick={() => terrenoM2 > 0 && frenteNum > 0 && setStep(2)}
+              disabled={terrenoM2 <= 0 || frenteNum <= 0}
+              className="w-full py-3 rounded-lg font-bold text-sm transition-all"
+              style={{ background: terrenoM2 > 0 ? 'var(--accent)' : 'var(--surface2)', color: terrenoM2 > 0 ? '#0a0a0c' : 'var(--text2)', cursor: terrenoM2 > 0 ? 'pointer' : 'not-allowed' }}>
+              Siguiente →
+            </button>
+          </div>
+        )}
+
+        {/* Step 2 */}
+        {step === 2 && (
+          <div className="space-y-3">
+            <div className="text-sm font-bold">¿En qué zona de PV está tu terreno?</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {DISTRITO_OPTIONS.map(d => (
+                <button key={d.id} onClick={() => { setSelectedDistrito(d.id); setStep(3) }}
+                  className="p-4 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
+                  style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                  <div className="mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{d.id}</div>
+                  <div className="text-sm mt-1">{d.label}</div>
+                  <div className="text-xs mt-1" style={{ color: 'var(--text2)' }}>{DISTRITOS[d.id].zonas.length} zonas · PDU {DISTRITOS[d.id].periodo}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3 */}
+        {step === 3 && distrito && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <div className="text-sm font-bold">Selecciona tu zonificación</div>
+                <div className="text-xs" style={{ color: 'var(--text2)' }}>{distrito.nombre} · {terrenoM2} m² ({frenteInput}×{fondoInput})</div>
+              </div>
+              <input type="text" placeholder="Filtrar..." value={search} onChange={e => setSearch(e.target.value)}
+                className="px-3 py-2 rounded-lg border text-sm bg-transparent outline-none w-full sm:w-44"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }} />
+            </div>
+            <div className="text-xs p-3 rounded-lg" style={{ background: 'var(--surface2)', color: 'var(--text2)' }}>
+              💡 La clave de zonificación (H1, H2, CS2, TS...) aparece en tu escritura, constancia catastral o plano de lotificación.
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {filteredZonas.map((z, i) => (
+                <button key={i} onClick={() => { setSelectedZona(z); setStep(4) }}
+                  className="w-full p-3 rounded-lg border text-left text-sm transition-all hover:border-[var(--accent)]"
+                  style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="mono text-xs font-bold" style={{ color: 'var(--accent)' }}>{z.clave}</span>
+                      <div className="text-xs mt-0.5" style={{ color: 'var(--text2)' }}>{z.nombre}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="mono text-sm font-bold">{z.CUS}</div>
+                      <div className="text-[9px] uppercase" style={{ color: 'var(--text2)' }}>CUS</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 4 */}
+        {step === 4 && dictamen && (
+          <div className="space-y-4">
+            <div className="text-sm font-bold">Dictamen — {terrenoM2} m² ({frenteInput}m × {fondoInput}m) — {uso}</div>
+            <DictamenResult result={dictamen} terrenoM2={terrenoM2} frente={frenteNum} />
+          </div>
+        )}
+
+        <GlosarioPanel />
+        <footer className="text-center py-6 text-xs" style={{ color: 'var(--text2)' }}>
+          Expat Advisor MX · Colmena v2 · <span className="mono">duendes.app 2026</span>
+        </footer>
+      </main>
     </div>
   )
 }
@@ -82,105 +311,6 @@ function GlosarioPanel() {
           ))}
         </div>
       )}
-    </div>
-  )
-}
-
-export default function Home() {
-  const [selectedDistrito, setSelectedDistrito] = useState(null)
-  const [search, setSearch] = useState('')
-
-  const distrito = selectedDistrito ? DISTRITOS[selectedDistrito] : null
-  const filteredZonas = distrito?.zonas?.filter(z => {
-    if (!search) return true
-    const s = search.toLowerCase()
-    return z.clave.toLowerCase().includes(s) || z.nombre.toLowerCase().includes(s)
-  }) || []
-
-  const totalZonas = Object.values(DISTRITOS).reduce((sum, d) => sum + d.zonas.length, 0)
-
-  return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      {/* Header */}
-      <header className="border-b" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-        <div className="max-w-4xl mx-auto px-4 py-5">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: '#c9a84c22', color: 'var(--accent)' }}>◉</div>
-            <h1 className="text-xl font-bold">Uso de Suelo PVR</h1>
-          </div>
-          <p className="text-sm ml-11" style={{ color: 'var(--text2)' }}>
-            Dictamen automático de zonificación — Puerto Vallarta — {totalZonas} zonas en 6 distritos
-          </p>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-        {/* District selector */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {DISTRITO_OPTIONS.map(d => (
-            <button
-              key={d.id}
-              onClick={() => { setSelectedDistrito(d.id); setSearch('') }}
-              className="p-3 rounded-lg border text-left text-sm transition-all hover:border-[var(--accent)]"
-              style={{
-                background: selectedDistrito === d.id ? 'var(--surface2)' : 'var(--surface)',
-                borderColor: selectedDistrito === d.id ? 'var(--accent)' : 'var(--border)',
-              }}
-            >
-              <div className="mono font-bold text-xs" style={{ color: selectedDistrito === d.id ? 'var(--accent)' : 'var(--text2)' }}>{d.id}</div>
-              <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--text)' }}>{d.label.split(' — ')[1]}</div>
-            </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        {distrito && (
-          <>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <h2 className="font-bold">{distrito.nombre}</h2>
-                <span className="text-xs mono" style={{ color: 'var(--text2)' }}>PDU {distrito.periodo} · {distrito.zonas.length} zonas</span>
-              </div>
-              <input
-                type="text"
-                placeholder="Filtrar zona... (ej: H1, CS3, turístico)"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="px-3 py-2 rounded-lg border text-sm bg-transparent outline-none w-full sm:w-64"
-                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              {filteredZonas.map((z, i) => <ZonaCard key={i} zona={z} />)}
-              {filteredZonas.length === 0 && (
-                <div className="text-center py-8 text-sm" style={{ color: 'var(--text2)' }}>
-                  Sin resultados para "{search}"
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {!distrito && (
-          <div className="text-center py-16">
-            <div className="text-4xl mb-4">🏗️</div>
-            <h2 className="text-lg font-bold mb-2">Selecciona un distrito</h2>
-            <p className="text-sm" style={{ color: 'var(--text2)' }}>
-              Consulta zonificación secundaria, COS, CUS, alturas, densidades y más.<br />
-              Datos oficiales del Plan de Desarrollo Urbano de Puerto Vallarta.
-            </p>
-          </div>
-        )}
-
-        <GlosarioPanel />
-
-        {/* Footer */}
-        <footer className="text-center py-6 text-xs" style={{ color: 'var(--text2)' }}>
-          <span>Expat Advisor MX · Colmena v2 · </span>
-          <span className="mono">duendes.app 2026</span>
-        </footer>
-      </main>
     </div>
   )
 }
