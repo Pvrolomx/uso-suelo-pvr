@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { DISTRITOS, BAHIA_BANDERAS, GLOSARIO } from '../data/zonificacion'
+import { findDistrito } from '../data/colonias'
 
 const PVR_OPTIONS = [
   { id: 'D1', label: 'Zona Romántica / Olas Altas' },
@@ -127,6 +128,20 @@ export default function Home() {
   const [fondoInput, setFondoInput] = useState('')
   const [uso, setUso] = useState('habitacional')
   const [search, setSearch] = useState('')
+  const [direccion, setDireccion] = useState('')
+
+  // Auto-detect distrito from address
+  const handleDireccion = (val) => {
+    setDireccion(val)
+    const detected = findDistrito(val)
+    if (detected === 'BB') {
+      setMunicipio('bb')
+      setSelectedDistrito(null)
+    } else if (detected) {
+      setMunicipio('pvr')
+      setSelectedDistrito(detected)
+    }
+  }
 
   const isBB = municipio === 'bb'
   const distrito = selectedDistrito ? DISTRITOS[selectedDistrito] : (isBB ? BAHIA_BANDERAS : null)
@@ -144,7 +159,7 @@ export default function Home() {
     ? generarDictamen(selectedZona, selectedDistrito || 'BB', terrenoM2, frenteNum, uso)
     : null
 
-  const reset = () => { setStep(0); setMunicipio(null); setSelectedDistrito(null); setSelectedZona(null); setFrenteInput(''); setFondoInput(''); setSearch('') }
+  const reset = () => { setStep(0); setMunicipio(null); setSelectedDistrito(null); setSelectedZona(null); setFrenteInput(''); setFondoInput(''); setSearch(''); setDireccion('') }
   const totalZonasPVR = Object.values(DISTRITOS).reduce((sum, d) => sum + d.zonas.length, 0)
   const totalZonas = totalZonasPVR + BAHIA_BANDERAS.zonas.length
 
@@ -180,26 +195,57 @@ export default function Home() {
 
         {/* Step 0: Municipio */}
         {step === 0 && (
-          <div className="space-y-3">
-            <div className="text-sm font-bold">¿Dónde está tu terreno?</div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button onClick={() => { setMunicipio('pvr'); setStep(1) }}
-                className="p-5 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
-                style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                <div className="text-2xl mb-2">🏖️</div>
-                <div className="font-bold">Puerto Vallarta</div>
-                <div className="text-xs mt-1" style={{ color: 'var(--text2)' }}>Jalisco · {totalZonasPVR} zonas · 6 distritos</div>
-                <div className="text-xs mt-1" style={{ color: 'var(--accent)' }}>PDU 2012-2021</div>
-              </button>
-              <button onClick={() => { setMunicipio('bb'); setStep(1) }}
-                className="p-5 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
-                style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-                <div className="text-2xl mb-2">🌴</div>
-                <div className="font-bold">Bahía de Banderas</div>
-                <div className="text-xs mt-1" style={{ color: 'var(--text2)' }}>Nayarit · {BAHIA_BANDERAS.zonas.length} zonas</div>
-                <div className="text-xs mt-1" style={{ color: '#f59e0b' }}>PDU 2003 (en actualización)</div>
-              </button>
+          <div className="space-y-4">
+            {/* Address auto-detect */}
+            <div className="p-5 rounded-lg border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              <div className="text-sm font-bold mb-1">¿Dónde está tu terreno?</div>
+              <div className="text-xs mb-3" style={{ color: 'var(--text2)' }}>Escribe tu colonia o dirección y detectamos el municipio y distrito automáticamente</div>
+              <input type="text" placeholder="ej: 5 de Diciembre, Versalles, Marina Vallarta, Bucerías..."
+                value={direccion} onChange={e => handleDireccion(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border text-sm bg-transparent outline-none"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }} />
+              {direccion && (municipio || selectedDistrito) && (
+                <div className="mt-3 p-3 rounded-lg flex items-center gap-2" style={{ background: '#16a34a15' }}>
+                  <span style={{ color: 'var(--green)' }}>✓</span>
+                  <span className="text-sm">
+                    {isBB ? '🌴 Bahía de Banderas, Nayarit' : `🏖️ Puerto Vallarta — Distrito ${selectedDistrito}`}
+                    {selectedDistrito && DISTRITOS[selectedDistrito] && <span style={{ color: 'var(--text2)' }}> ({DISTRITOS[selectedDistrito].nombre})</span>}
+                  </span>
+                </div>
+              )}
+              {direccion && !municipio && !selectedDistrito && direccion.length > 3 && (
+                <div className="mt-3 p-3 rounded-lg text-xs" style={{ background: 'var(--surface2)', color: 'var(--text2)' }}>
+                  No reconocimos la colonia. Selecciona municipio manualmente:
+                </div>
+              )}
             </div>
+
+            {/* Manual selection or continue */}
+            {(municipio || selectedDistrito) ? (
+              <button onClick={() => setStep(1)}
+                className="w-full py-3 rounded-lg font-bold text-sm"
+                style={{ background: 'var(--accent)', color: '#0a0a0c', cursor: 'pointer' }}>
+                Continuar →
+              </button>
+            ) : (
+              <>
+                <div className="text-xs text-center" style={{ color: 'var(--text2)' }}>— o selecciona manualmente —</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button onClick={() => { setMunicipio('pvr'); setStep(1) }}
+                    className="p-4 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                    <div className="font-bold">🏖️ Puerto Vallarta</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--text2)' }}>Jalisco · {totalZonasPVR} zonas · 6 distritos</div>
+                  </button>
+                  <button onClick={() => { setMunicipio('bb'); setStep(1) }}
+                    className="p-4 rounded-lg border text-left transition-all hover:border-[var(--accent)]"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                    <div className="font-bold">🌴 Bahía de Banderas</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--text2)' }}>Nayarit · {BAHIA_BANDERAS.zonas.length} zonas</div>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -208,6 +254,11 @@ export default function Home() {
           <div className="space-y-4">
             <div className="p-5 rounded-lg border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
               <div className="text-sm font-bold mb-4">¿Cuánto mide tu terreno?</div>
+              {direccion && (municipio || selectedDistrito) && (
+                <div className="mb-3 p-2 rounded-lg text-xs" style={{ background: 'var(--surface2)', color: 'var(--text2)' }}>
+                  📍 {direccion} → {isBB ? 'Bahía de Banderas' : `PV ${selectedDistrito} (${DISTRITOS[selectedDistrito]?.nombre || ''})`}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs mb-1 block" style={{ color: 'var(--text2)' }}>Frente (metros)</label>
@@ -242,7 +293,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <button onClick={() => terrenoM2 > 0 && frenteNum > 0 && setStep(isBB ? 3 : 2)}
+            <button onClick={() => terrenoM2 > 0 && frenteNum > 0 && setStep(isBB ? 3 : (selectedDistrito ? 3 : 2))}
               disabled={terrenoM2 <= 0 || frenteNum <= 0}
               className="w-full py-3 rounded-lg font-bold text-sm transition-all"
               style={{ background: terrenoM2 > 0 ? 'var(--accent)' : 'var(--surface2)', color: terrenoM2 > 0 ? '#0a0a0c' : 'var(--text2)', cursor: terrenoM2 > 0 ? 'pointer' : 'not-allowed' }}>
